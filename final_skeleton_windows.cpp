@@ -117,10 +117,16 @@ int main(int argc, char *argv[])
             break;
         }
     }
-    if(gameover==true){
-        std::cout<<"game over"<<endl;
-    }
     system("cls");
     std::cout<<"Start game~!"<<endl;
+    if(gameover==true){
+        int total_score=manager.my_plane.my_score;
+        int n_kill=manager.my_plane.n_kill;
+        int r_kill=manager.my_plane.r_kill;
+        int s_kill=manager.my_plane.s_kill;
+        int d_kill=manager.my_plane.d_kill;
+        int a_kill=manager.my_plane.a_kill;
+        std::cout<<"Your score is "<<total_score<<" (n : "<<n_kill<<" , r : "<<r_kill<<" , s : "<<s_kill<<" , d : "<<d_kill<<" , a : "<<a_kill<<")"<<endl;
+    }
     return 0;
 }

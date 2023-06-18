@@ -54,36 +54,8 @@ void Screen_manager::print_share(){
                 continue;
             }
             else{
-                
                 if(iter!=(this->my_plane.bullet.end()-1) && curr_frame!=1){//총알이 한박자 쉬고 나감. end()-1 때문에.
-                    if(board[(*iter)->y][(*iter)->x]!=(*iter)->type){//원래 위치의 모양이 바뀌면.erase만. 왜냐하면, type이 바뀐 이유로 특정값이 위치에 있다.
-                        this->my_plane.bullet.erase(iter);
-                        continue;
-                    }
-                    else if(before_board[(*iter)->y][(*iter)->x]=='*'){//원래 위치에 상호작용한 흔적이 있는 경우.
-                        board[(*iter)->y][(*iter)->x]=' ';
-                        before_board[(*iter)->y][(*iter)->x]='a';//초기화
-                        this->my_plane.bullet.erase(iter);
-                        continue;
-                    }
-                    else if(board[(*iter)->y-1][(*iter)->x]==' '){//이동하려는 위치에 빈공간이  있는 경우.
-                        board[(*iter)->y][(*iter)->x]=' ';;
-                    }
-                    else if(board[(*iter)->y-1][(*iter)->x]=='\''){//이동하려는 위치에 총알이 있는 경우
-                        board[(*iter)->y][(*iter)->x]=' ';
-                    }
-                    else if(board[(*iter)->y-1][(*iter)->x]=='^'){//이동하려는 위치에 총알이 있는 경우
-                        board[(*iter)->y][(*iter)->x]=' ';
-                    }
-                    else if(board[(*iter)->y-1][(*iter)->x]=='*'){//이동하려는 위치에 적 총알이 있는 경우
-                        board[(*iter)->y][(*iter)->x]=' ';
-                        before_board[(*iter)->y-1][(*iter)->x]=(*iter)->type;//상호작용 위치에 기록.
-                        this->my_plane.bullet.erase(iter);
-                        continue;
-                    }
-                    else{
-                        board[(*iter)->y][(*iter)->x]=' ';
-                    }
+                    board[(*iter)->y][(*iter)->x]=' ';
                 }
                 (*iter)->y -= 1;
                 board[(*iter)->y][(*iter)->x]=(*iter)->type;
@@ -105,40 +77,9 @@ void Screen_manager::print_share(){
                 else{
                     int flag=1;
                     if(iter_EB!=((*iter)->bullet.end()) && curr_frame!=1){//end()-1 인지 아닌지가 중요.
-                        if(board[(*iter_EB)->y][(*iter_EB)->x]!=(*iter_EB)->type){//현재 있는 위치에 박았을때.
-                            (*iter)->bullet.erase(iter_EB);//enemy bullet erase.
-                            flag=0;
-                        }
-                        else if(before_board[(*iter_EB)->y][(*iter_EB)->x]=='\''){//현재 있는 위치에 박았을때. 이전에 상호작용이 있는 경우.
-                            board[(*iter_EB)->y][(*iter_EB)->x]=' ';//총알끼리 부딪혀서 터진 경우.
-                            before_board[(*iter_EB)->y][(*iter_EB)->x]='a';//initialize.
-                            (*iter)->bullet.erase(iter_EB);//enemy bullet erase.
-                            flag=0;
-                        }
-                        else if(before_board[(*iter_EB)->y][(*iter_EB)->x]=='^'){//현재 있는 위치에 박았을때. 이전에 상호작용이 있는 경우.
-                            board[(*iter_EB)->y][(*iter_EB)->x]=' ';//총알끼리 부딪혀서 터진 경우.
-                            before_board[(*iter_EB)->y][(*iter_EB)->x]='a';//initialize.
-                            (*iter)->bullet.erase(iter_EB);//enemy bullet erase.
-                            flag=0;
-                        }
-                        else if(board[(*iter_EB)->y+1][(*iter_EB)->x]=='M'){//이동할 위치에 박았을때.
+                        if(board[(*iter_EB)->y][(*iter_EB)->x]==(*iter_EB)->type){
                             board[(*iter_EB)->y][(*iter_EB)->x]=' ';
-                            before_board[(*iter_EB)->y+1][(*iter_EB)->x]='*';//다가올 상호작용에 대한 마킹.
-                            (*iter)->bullet.erase(iter_EB);//enemy bullet erase.
-                            flag=0;
                         }
-                        else if(board[(*iter_EB)->y+1][(*iter_EB)->x]=='\''||board[(*iter_EB)->y+1][(*iter_EB)->x]=='^'){//enemy bullet이 이동할 위치에 박았을때.
-                            board[(*iter_EB)->y][(*iter_EB)->x]=' ';
-                            before_board[(*iter_EB)->y+1][(*iter_EB)->x]='*';//다가올 상호작용에 대한 마킹.
-                            (*iter)->bullet.erase(iter_EB);//enemy bullet erase.
-                            flag=0;
-                        }
-                        else{
-                            board[(*iter_EB)->y][(*iter_EB)->x]=' ';
-                            flag=1;
-                        }
-                    }
-                    if(flag==1){
                         (*iter_EB)->y += 1;
                         board[(*iter_EB)->y][(*iter_EB)->x]=(*iter_EB)->type;
                         iter_EB++;
@@ -157,11 +98,21 @@ void Screen_manager::print_share(){
                     (*iter)->hp_enemy-=2;
                 }
                 if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
-                    if((*iter)->type=='n'||(*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                    this->my_plane.my_score+=(*iter)->score;
+                    if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.n_kill++;
+                        this->enemy.erase(iter);
+                        continue;
+                    }
+                    if((*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.a_kill++;
                         this->enemy.erase(iter);
                         continue;
                     }
                     (*iter)->live=false;
+                    if((*iter)->type=='r') this->my_plane.r_kill++;
+                    if((*iter)->type=='s') this->my_plane.s_kill++;
+                    if((*iter)->type=='d') this->my_plane.d_kill++;
                     (*iter)->type=' ';
                 }
                 board[(*iter)->y][(*iter)->x]=(*iter)->type;
@@ -175,11 +126,21 @@ void Screen_manager::print_share(){
                     (*iter)->hp_enemy-=2;
                 }
                 if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
-                    if((*iter)->type=='n'||(*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                    this->my_plane.my_score+=(*iter)->score;
+                    if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.n_kill++;
+                        this->enemy.erase(iter);
+                        continue;
+                    }
+                    if((*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.a_kill++;
                         this->enemy.erase(iter);
                         continue;
                     }
                     (*iter)->live=false;
+                    if((*iter)->type=='r') this->my_plane.r_kill++;
+                    if((*iter)->type=='s') this->my_plane.s_kill++;
+                    if((*iter)->type=='d') this->my_plane.d_kill++;
                     (*iter)->type=' ';
                 }
                 board[(*iter)->y][(*iter)->x]=(*iter)->type;//enemy 이동. !~enemy_bullet
@@ -199,11 +160,21 @@ void Screen_manager::print_share(){
                         (*iter)->hp_enemy-=2;
                     }
                     if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
-                        if((*iter)->type=='n'||(*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.my_score+=(*iter)->score;
+                        if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                            this->my_plane.n_kill++;
+                            this->enemy.erase(iter);
+                            continue;
+                        }
+                        if((*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                            this->my_plane.a_kill++;
                             this->enemy.erase(iter);
                             continue;
                         }
                         (*iter)->live=false;
+                        if((*iter)->type=='r') this->my_plane.r_kill++;
+                        if((*iter)->type=='s') this->my_plane.s_kill++;
+                        if((*iter)->type=='d') this->my_plane.d_kill++;
                         (*iter)->type=' ';
                     }
                     if(iter!=this->enemy.end() && curr_frame!=1){//curr_frame==2 부터 enemy 이동.
@@ -216,7 +187,10 @@ void Screen_manager::print_share(){
                         }
                         else {
                             if((*iter)->type=='d'){//diagonal.
-                                Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x, check_frame);
+                                int swift=0;
+                                if((*iter)->x<15) swift=-1;
+                                else if((*iter)->x>=15) swift=1;
+                                Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, check_frame);
                                 (*iter)->bullet.push_back(bullet_obj);
                                 board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                             }
@@ -235,11 +209,21 @@ void Screen_manager::print_share(){
                         (*iter)->hp_enemy-=2;
                     }
                     if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
-                        if((*iter)->type=='n'||(*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.my_score+=(*iter)->score;
+                        if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                            this->my_plane.n_kill++;
+                            this->enemy.erase(iter);
+                            continue;
+                        }
+                        if((*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                            this->my_plane.a_kill++;
                             this->enemy.erase(iter);
                             continue;
                         }
                         (*iter)->live=false;
+                        if((*iter)->type=='r') this->my_plane.r_kill++;
+                        if((*iter)->type=='s') this->my_plane.s_kill++;
+                        if((*iter)->type=='d') this->my_plane.d_kill++;
                         (*iter)->type=' ';
                     }
                     board[(*iter)->y][(*iter)->x]=(*iter)->type;//enemy 이동. !~enemy_bullet
@@ -256,11 +240,21 @@ void Screen_manager::print_share(){
                     (*iter)->hp_enemy-=2;
                 }
                 if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
-                    if((*iter)->type=='n'||(*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                    this->my_plane.my_score+=(*iter)->score;
+                    if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.n_kill++;
+                        this->enemy.erase(iter);
+                        continue;
+                    }
+                    if((*iter)->type=='a'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
+                        this->my_plane.a_kill++;
                         this->enemy.erase(iter);
                         continue;
                     }
                     (*iter)->live=false;
+                    if((*iter)->type=='r') this->my_plane.r_kill++;
+                    if((*iter)->type=='s') this->my_plane.s_kill++;
+                    if((*iter)->type=='d') this->my_plane.d_kill++;
                     (*iter)->type=' ';
                 }
                 board[(*iter)->y][(*iter)->x]=(*iter)->type;//enemy 이동. !~enemy_bullet
