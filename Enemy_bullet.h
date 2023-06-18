@@ -14,11 +14,22 @@
 
 class Enemy_bullet{
     public:
-        Enemy_bullet(int y_value, int x_value, int frame_value) \
-        : y(y_value), x(x_value), create_frame_bullet(frame_value) {};
+        Enemy_bullet(int y_value, int x_value, int buffed, int frame_value) \
+        : y(y_value), x(x_value), is_buffed(buffed), create_frame_bullet(frame_value) {
+            if(buffed==true){
+                damage=2;
+            }
+        };
+        Enemy_bullet(int y_value, int x_value, int buffed, int frame_value, int swift_value) \
+        : y(y_value), x(x_value), is_buffed(buffed), create_frame_bullet(frame_value), cell_swift(swift_value) {
+            if(buffed==true){
+                damage=2;
+            }
+        };
         int damage=1;
         int y, x;
         int create_frame_bullet; //initialize when it creates
+        int is_buffed=false;//if true increase damage by 1.
         int check_frame_bullet; //update
         int level=1;
         int cell_speed_bullet=1;//y increase

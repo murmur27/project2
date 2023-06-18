@@ -25,6 +25,12 @@ class My_plane{
         int create_frame_my_plane; //initialize when it creates//처음 값 0.
         int check_frame_my_plane=0;
         int hp_my_plane=5;
+        int my_score=0;
+        int n_kill=0;
+        int r_kill=0;
+        int s_kill=0;
+        int d_kill=0;
+        int a_kill=0;
         vector<Bullet*> bullet;//pointer 이용 권장. ex) vector<Bullet*> bullet
 };
 #endif

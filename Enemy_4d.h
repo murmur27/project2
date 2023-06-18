@@ -2,7 +2,6 @@
 #define ENEMY_4D_H
 
 #include "Enemy_2r.h"
-#include "Enemy_bullet.h"//enemy bullet의 cell_speed 수정 diagonal하게.
 
 class Enemy_4d: public Enemy_2r{//shot 있음. diagonally shot.
     public:
