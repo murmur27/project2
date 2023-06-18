@@ -54,9 +54,17 @@ int main(int argc, char *argv[])
     manager.print();
     manager.render();
 
+    int gameover=false;//default.
     int ch = 0;
     while(ch !='x')
     {
+        if(ch=='p') {//press p when intend to pause.
+            while(true){
+                if(_kbhit()){
+                        break;
+                }
+            }
+        }
         auto start = std::chrono::system_clock::now();
         if(_kbhit()) {
             ch = getKeyDown();
@@ -83,6 +91,13 @@ int main(int argc, char *argv[])
         if(manager.curr_frame-prev_frame>0){
             manager.render();
         }
+        if(manager.my_plane.hp_my_plane<=0){
+            gameover=true;
+            break;
+        }
+    }
+    if(gameover==true){
+        std::cout<<
     }
     system("cls");
     std::cout<<"Start game~!"<<endl;
