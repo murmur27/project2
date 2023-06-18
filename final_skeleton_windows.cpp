@@ -91,13 +91,34 @@ int main(int argc, char *argv[])
         if(manager.curr_frame-prev_frame>0){
             manager.render();
         }
-        if(manager.my_plane.hp_my_plane<=0){
+        if(manager.my_plane.hp_my_plane<=0){//my_plane hp 0이면 gameover.
+            gameover=true;
+            break;
+        }
+        int flag1=false;//남아 있는 enemy가 없다면 true로 바뀜.
+        for(auto iter=manager.enemy.begin();iter<manager.enemy.end();iter++){
+            if((*iter)->live==true){
+                flag1=false;
+                break;
+            }
+            else{
+                flag1=true;
+            }
+        }
+        if(manager.enemy.begin()==manager.enemy.end()){
+            flag1=true;
+        }
+        int flag2=false;//남아 있는 event가 없다면 true로 바뀜.
+        if(manager.curr_frame>=manager.frame_event[num_event-1]){
+            flag2=true;
+        }
+        if(flag1==true&&flag2==true){//flag1,2 둘다 true이면 gameover
             gameover=true;
             break;
         }
     }
     if(gameover==true){
-        std::cout<<
+        std::cout<<"game over"<<endl;
     }
     system("cls");
     std::cout<<"Start game~!"<<endl;
