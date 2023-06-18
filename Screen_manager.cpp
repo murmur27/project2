@@ -66,9 +66,16 @@ void Screen_manager::print_share(){
             int enemy_create_frame = (*iter)->create_frame_enemy;
             int enemy_speed = (*iter)->cell_speed;
             int enemy_check_frame = (*iter)->check_frame_enemy;
-            //enemy_bullet move per cell_speed=1==shot_frame
+            
+            if(board[(*iter)->y][(*iter)->x]=='M'){//my_plane과 enemy 상호작용.
+                this->my_plane.hp_my_plane--;
+            }
+
             // enemy 총알의 상호작용란. 이 범위 밖에 enemy 총알의 생성 파트가 있다.
             for(auto iter_EB=(*iter)->bullet.begin(); iter_EB<(*iter)->bullet.end(); ){//enemy_bullet의 원소는 live_state==false이면 더 이상 생성 x. 다만 원래 생성된 것들은 계속 상호작용.
+                if(board[(*iter_EB)->y][(*iter_EB)->x]=='M'){//enemy_bullet conflict with my_plane
+                    this->my_plane.hp_my_plane-=(*iter_EB)->damage;
+                }
                 int outside = false;
                 if((*iter_EB)->x<=0||(*iter_EB)->x>=(width-1)){
                     outside = true;
@@ -99,7 +106,12 @@ void Screen_manager::print_share(){
             // enemy 총알의 상호작용란 위까지 ^^
 
             if((*iter)->live==false){//enemy가 죽은 상태이면 뒤 부분 모두 뛰어넘기.
+                if((*iter)->bullet.begin()==(*iter)->bullet.end()){//enemy가 죽은 상태이고 enemy 총알마저 모두 없어지면 enemy 삭제하기.
+                    this->enemy.erase(iter);
+                }
+                else{
                 iter++;
+                }
                 continue;
             }
             if(curr_frame==enemy_create_frame){//처음 생성.
@@ -140,6 +152,9 @@ void Screen_manager::print_share(){
                 if(board[(*iter)->y][(*iter)->x]=='^'){//enemy가 현재 위치에 level_2_bullet 있으면 life 2까기.
                     (*iter)->hp_enemy-=2;
                 }
+                if(board[(*iter)->y][(*iter)->x]=='!'){//enemy가 현재 위치에 level_3_bullet 있으면 life 3까기.
+                    (*iter)->hp_enemy-=3;
+                }
                 if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
                     this->my_plane.my_score+=(*iter)->score;
                     if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
@@ -174,6 +189,9 @@ void Screen_manager::print_share(){
                     if(board[(*iter)->y][(*iter)->x]=='^'){//enemy가 현재 위치에 level_2_bullet 있으면 life 2까기.
                         (*iter)->hp_enemy-=2;
                     }
+                    if(board[(*iter)->y][(*iter)->x]=='!'){//enemy가 현재 위치에 level_3_bullet 있으면 life 3까기.
+                        (*iter)->hp_enemy-=3;
+                    }
                     if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
                         this->my_plane.my_score+=(*iter)->score;
                         if((*iter)->type=='n'){//안 움직이면서 총알 생성도 안하는 것들은 erase 해줘도 됨.
@@ -195,7 +213,10 @@ void Screen_manager::print_share(){
                     if(iter!=this->enemy.end() && curr_frame!=1){//curr_frame==2 부터 enemy 이동.
                         board[(*iter)->y][(*iter)->x]=' ';
                     }
-                    (*iter)->y += 1;//y position 이동. !!!!!!!!move!!!!!!!!
+
+                    (*iter)->y += 1;//y position 이동.
+                    //move!!! 이후에는 이동하려는 자리와 상호작용한다.
+
                     //enemy_bullet create!!!!!!
                     if((*iter)->can_shoot==true){
                         if((*iter)->y>=height-2){
@@ -206,12 +227,21 @@ void Screen_manager::print_share(){
                                 if((*iter)->x>0&&(*iter)->x<(width/2)) {
                                     swift=-1;
                                     Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, check_frame, swift);
+                                    //버프 필드 고려해야함.
+                                    //enemy_bullet 생성 직후 충돌 여부 따지기.
+                                    if(board[bullet_obj->y][bullet_obj->x]=='M'){//enemy_bullet conflict with my_plane
+                                        this->my_plane.hp_my_plane-=bullet_obj->damage;
+                                    }
                                     (*iter)->bullet.push_back(bullet_obj);
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
                                 else if((*iter)->x>=(width/2)&&(*iter)->x<(width-1)) {
                                     swift=1;
                                     Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, check_frame, swift);
+                                    //enemy_bullet 생성 직후 충돌 여부 따지기.
+                                    if(board[bullet_obj->y][bullet_obj->x]=='M'){//enemy_bullet conflict with my_plane
+                                        this->my_plane.hp_my_plane-=bullet_obj->damage;
+                                    }
                                     (*iter)->bullet.push_back(bullet_obj);
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
@@ -229,6 +259,9 @@ void Screen_manager::print_share(){
                     }
                     if(board[(*iter)->y][(*iter)->x]=='^'){//enemy가 이동하려는 자리에 level_2_bullet 있으면 life 2까기.
                         (*iter)->hp_enemy-=2;
+                    }
+                    if(board[(*iter)->y][(*iter)->x]=='!'){//enemy가 현재 위치에 level_3_bullet 있으면 life 3까기.
+                        (*iter)->hp_enemy-=3;
                     }
                     if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
                         this->my_plane.my_score+=(*iter)->score;
@@ -260,6 +293,9 @@ void Screen_manager::print_share(){
                 }
                 if(board[(*iter)->y][(*iter)->x]=='^'){//enemy가 현재 위치에 level_2_bullet 있으면 life 2까기.
                     (*iter)->hp_enemy-=2;
+                }
+                if(board[(*iter)->y][(*iter)->x]=='!'){//enemy가 현재 위치에 level_3_bullet 있으면 life 3까기.
+                    (*iter)->hp_enemy-=3;
                 }
                 if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
                     this->my_plane.my_score+=(*iter)->score;
