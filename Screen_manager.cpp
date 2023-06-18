@@ -68,7 +68,16 @@ void Screen_manager::print_share(){
             int enemy_check_frame = (*iter)->check_frame_enemy;
             //enemy_bullet move per cell_speed=1==shot_frame
             // enemy 총알의 상호작용란. 이 범위 밖에 enemy 총알의 생성 파트가 있다.
-            for(auto iter_EB=(*iter)->bullet.begin(); iter_EB<(*iter)->bullet.end(); ){//enemy_bullet의 원소는 live_state =false이면 더 이상 생성 x. 다만 원래 생성된 것들은 계속 상호작용.
+            for(auto iter_EB=(*iter)->bullet.begin(); iter_EB<(*iter)->bullet.end(); ){//enemy_bullet의 원소는 live_state==false이면 더 이상 생성 x. 다만 원래 생성된 것들은 계속 상호작용.
+                int outside = false;
+                if((*iter_EB)->x<=0||(*iter_EB)->x>=(width-1)){
+                    outside = true;
+                }
+                if((*iter_EB)->cell_swift!=0&&outside==true){
+                    board[(*iter_EB)->y][(*iter_EB)->x]=' ';
+                    (*iter)->bullet.erase(iter_EB);
+                     continue;
+                }
                 if((*iter_EB)->y>=height-1){
                     board[(*iter_EB)->y][(*iter_EB)->x]=' ';
                     (*iter)->bullet.erase(iter_EB);
@@ -81,11 +90,14 @@ void Screen_manager::print_share(){
                             board[(*iter_EB)->y][(*iter_EB)->x]=' ';
                         }
                         (*iter_EB)->y += 1;
+                        (*iter_EB)->x += (*iter_EB)->cell_swift;
                         board[(*iter_EB)->y][(*iter_EB)->x]=(*iter_EB)->type;
                         iter_EB++;
                     }
                 }
             }
+            // enemy 총알의 상호작용란 위까지 ^^
+
             if((*iter)->live==false){//enemy가 죽은 상태이면 뒤 부분 모두 뛰어넘기.
                 iter++;
                 continue;
@@ -96,6 +108,9 @@ void Screen_manager::print_share(){
                 }
                 if(board[(*iter)->y][(*iter)->x]=='^'){//enemy가 현재 위치에 level_2_bullet 있으면 life 2까기.
                     (*iter)->hp_enemy-=2;
+                }
+                if(board[(*iter)->y][(*iter)->x]=='!'){//enemy가 현재 위치에 level_3_bullet 있으면 life 3까기.
+                    (*iter)->hp_enemy-=3;
                 }
                 if((*iter)->hp_enemy<=0){//hp 0이면 제거할 수는 없다. 다만 상호작용 못하도록 처리해야함. Enemy.live = false 처리.
                     this->my_plane.my_score+=(*iter)->score;
@@ -188,11 +203,18 @@ void Screen_manager::print_share(){
                         else {
                             if((*iter)->type=='d'){//diagonal.
                                 int swift=0;
-                                if((*iter)->x<15) swift=-1;
-                                else if((*iter)->x>=15) swift=1;
-                                Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, check_frame);
-                                (*iter)->bullet.push_back(bullet_obj);
-                                board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
+                                if((*iter)->x>0&&(*iter)->x<(width/2)) {
+                                    swift=-1;
+                                    Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, check_frame, swift);
+                                    (*iter)->bullet.push_back(bullet_obj);
+                                    board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
+                                }
+                                else if((*iter)->x>=(width/2)&&(*iter)->x<(width-1)) {
+                                    swift=1;
+                                    Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, check_frame, swift);
+                                    (*iter)->bullet.push_back(bullet_obj);
+                                    board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
+                                }
                             }
                             else{                              
                                 Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x, check_frame);
@@ -332,11 +354,11 @@ void Screen_manager::enemy_push(int num_event){
                 enemy_obj_s = new Enemy_3s(y_event[i],x_event[i],frame_event[i]);
                 enemy.push_back(enemy_obj_s);
                 break;
-                /*
             case 'd':
                 enemy_obj_d = new Enemy_4d(y_event[i],x_event[i],frame_event[i]);
                 enemy.push_back(enemy_obj_d);
                 break;
+                /*
             case 'a':
                 enemy_obj_a = new Enemy_5a(y_event[i],x_event[i],frame_event[i]);
                 enemy.push_back(enemy_obj_a);
