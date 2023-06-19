@@ -154,6 +154,14 @@ void Screen_manager::print_share(){
                 continue;
             }
             if(curr_frame==enemy_create_frame){//처음 생성.
+                if ((*iter)->buff_speed==0) {
+                    if(this->buff_board[(*iter)->y][(*iter)->x]=='b'){
+                        if((*iter)->type >= 97 && (*iter)->type <=122) {
+                            (*iter)->type-=32;//대문자화.
+                            (*iter)->buffed=true;
+                        }
+                    }
+                }
                 if(board[(*iter)->y][(*iter)->x]=='\''){//enemy가 현재 위치에 level_1_bullet 있으면 life 1까기.
                     (*iter)->hp_enemy-=1;
                 }
@@ -185,22 +193,37 @@ void Screen_manager::print_share(){
                 iter++;
             }// iter++ 가 잘못 배정되거나 빠지면 오류. 아래 줄부터 에러 !!.
             else if((enemy_speed==0)&&(curr_frame-enemy_create_frame >= 0)){//~n, ~a
-                if ((*iter)->buff_speed==0) {}//~n
-                else if((curr_frame-enemy_create_frame)/(*iter)->buff_speed - enemy_check_frame > 0){//buff 먼저 걸 기회가 있음. buff.
-                //buff_range 생성.
-                    for(int i=0;i<7;i++){
-                        for(int j=0;j<7;j++){
-                            buff_board[i+(*iter)->y-3][j+(*iter)->x-3]='b';
+                if ((*iter)->buff_speed==0) {//~n
+                    if(this->buff_board[(*iter)->y][(*iter)->x]=='b'){
+                        if((*iter)->type >= 97 && (*iter)->type <=122) {
+                            (*iter)->type-=32;//대문자화.
+                            (*iter)->buffed=true;
                         }
                     }
                 }
-                else {
-                    for(int i=0;i<7;i++){
-                        for(int j=0;j<7;j++){
-                            buff_board[i+(*iter)->y-3][j+(*iter)->x-3]='a';
+                else if((curr_frame-enemy_create_frame)/(*iter)->buff_speed - enemy_check_frame > 0){//buff 먼저 걸 기회가 있음. buff.
+                //buff_range 생성.
+                    int up=-3;
+                    int down=3;
+                    int left=-3;
+                    int right=3;
+                    if((*iter)->y<3){
+                        up=0-(*iter)->y;
+                    }
+                    if((*iter)->y>height-4){
+                        down=height-1-(*iter)->y;
+                    }
+                    if((*iter)->x<4){
+                        left=1-(*iter)->x;
+                    }
+                    if((*iter)->x>width-4){
+                        right=width-1-(*iter)->x;
+                    }
+                    for(int i=up;i<=down;i++){
+                        for(int j=left;j<=right;j++){
+                            this->buff_board[i+(*iter)->y][j+(*iter)->x]='b';
                         }
                     }
-                    //buff_range 삭제.
                 }
                 if(board[(*iter)->y][(*iter)->x]=='\''){//enemy가 현재 위치에 level_1_bullet 있으면 life 1까기.
                     (*iter)->hp_enemy-=1;
@@ -233,6 +256,14 @@ void Screen_manager::print_share(){
                 iter++;
             }
             else if((curr_frame-enemy_create_frame >= 0)&&((curr_frame-enemy_create_frame)/enemy_speed - enemy_check_frame > 0)) {//이동 조건과 이동.
+                if ((*iter)->buff_speed==0) {//
+                    if(this->buff_board[(*iter)->y][(*iter)->x]=='b'){
+                        if((*iter)->type >= 97 && (*iter)->type <=122) {
+                            (*iter)->type-=32;//대문자화.
+                            (*iter)->buffed=true;
+                        }
+                    }
+                }
                 if((*iter)->y>=height-1){//position
                     board[(*iter)->y][(*iter)->x]=' ';//erase
                     this->enemy.erase(iter);//이 때 무조건 제거되야 함.
@@ -278,10 +309,6 @@ void Screen_manager::print_share(){
                         if((*iter)->y>=height-2){
                         }
                         else {
-                            int buffed=false;
-                            if((*iter)->type=='S'||(*iter)->type=='D'){//enemy 중 S,D만 buffed_enemy_bullet 생성 가능.
-                                buffed=true;
-                            }
                             if((*iter)->type=='d'){//diagonal.
                                 int swift=0;
                                 if((*iter)->x>1&&(*iter)->x<(width/2)) {
@@ -299,7 +326,7 @@ void Screen_manager::print_share(){
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
                             }
-                            else{                              
+                            else{//~s
                                 Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x, (*iter)->buffed, check_frame);
                                 (*iter)->bullet.push_back(bullet_obj);
                                 board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
@@ -341,6 +368,14 @@ void Screen_manager::print_share(){
                 }
             }
             else if (curr_frame-enemy_create_frame >= 0){//이동하지 않을때.
+                if ((*iter)->buff_speed==0) {
+                    if(this->buff_board[(*iter)->y][(*iter)->x]=='b'){
+                        if((*iter)->type >= 97 && (*iter)->type <=122) {
+                            (*iter)->type-=32;//대문자화.
+                            (*iter)->buffed=true;
+                        }
+                    }
+                }
                 if(board[(*iter)->y][(*iter)->x]=='\''){//enemy가 현재 위치에 level_1_bullet 있으면 life 1까기.
                     (*iter)->hp_enemy-=1;
                 }
@@ -376,6 +411,11 @@ void Screen_manager::print_share(){
             }
             board[my_plane.y][my_plane.x]='M';
         }
+    for(int i=0;i<height;i++){
+        for(int j=0;j<width;j++){
+            this->buff_board[i][j]='a';//initialize;
+        }
+    }
     this->my_plane.check_frame_my_plane+=1;
     check_frame++;
     }//위까지는 정상 작동 enemy 포인터의 enemy_bullet에 대한 access 필요.
@@ -450,7 +490,7 @@ void Screen_manager::enemy_push(int num_event){
                 break;
             case 'a':
                 enemy_obj_a = new Enemy_5a(y_event[i],x_event[i],frame_event[i]);
-                enemy.push_back(enemy_obj_a);
+                enemy.insert(enemy.begin(),enemy_obj_a);//맨 앞에 추가해서 buff field를 가장 먼저 생성하도록
                 break;
         }
     }
