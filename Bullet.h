@@ -14,8 +14,13 @@
 
 class Bullet{
     public:
-        Bullet(int y_value, int x_value, int frame_value) \
-        : y(y_value), x(x_value), create_frame_bullet(frame_value) {};
+        Bullet(int y_value, int x_value, int frame_value, int level) \
+        : y(y_value), x(x_value), create_frame_bullet(frame_value) {
+            damage=level;
+            if(level==1) type='\'';
+            if(level==2) type='^';
+            if(level==3) type='!';
+        };
         int damage=1;
         int y, x;
         int create_frame_bullet; //initialize when it creates

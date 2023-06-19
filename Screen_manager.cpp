@@ -73,8 +73,18 @@ void Screen_manager::print_share(){
             }
         }
 
-        Bullet *bullet_obj = new Bullet(this->my_plane.y-1+shot_frame, this->my_plane.x, check_frame);//bullet create
+        Bullet *bullet_obj = new Bullet(this->my_plane.y-1+shot_frame, this->my_plane.x, check_frame, this->my_plane.level);//bullet create
         this->my_plane.bullet.push_back(bullet_obj);//contact by reference
+        if(this->my_plane.power==2){
+            if(this->my_plane.x>1){
+            Bullet *bullet_obj1 = new Bullet(this->my_plane.y-1+shot_frame, this->my_plane.x-1, check_frame, this->my_plane.level);//bullet create
+            this->my_plane.bullet.push_back(bullet_obj1);//contact by reference
+            }
+            if(this->my_plane.x<width-2){
+            Bullet *bullet_obj2 = new Bullet(this->my_plane.y-1+shot_frame, this->my_plane.x+1, check_frame, this->my_plane.level);//bullet create
+            this->my_plane.bullet.push_back(bullet_obj2);//contact by reference
+            }
+        }
         for(auto iter=this->my_plane.bullet.begin(); iter<this->my_plane.bullet.end(); ){//iter == bullet reference의 reference. *iter == bullet_obj
             if((*iter)->y<=0){//position
                 board[(*iter)->y][(*iter)->x]=' ';//erase
@@ -174,7 +184,24 @@ void Screen_manager::print_share(){
                 board[(*iter)->y][(*iter)->x]=(*iter)->type;
                 iter++;
             }// iter++ 가 잘못 배정되거나 빠지면 오류. 아래 줄부터 에러 !!.
-            else if((enemy_speed==0)&&(curr_frame-enemy_create_frame >= 0)){//~n
+            else if((enemy_speed==0)&&(curr_frame-enemy_create_frame >= 0)){//~n, ~a
+                if ((*iter)->buff_speed==0) {}//~n
+                else if((curr_frame-enemy_create_frame)/(*iter)->buff_speed - enemy_check_frame > 0){//buff 먼저 걸 기회가 있음. buff.
+                //buff_range 생성.
+                    for(int i=0;i<7;i++){
+                        for(int j=0;j<7;j++){
+                            buff_board[i+(*iter)->y-3][j+(*iter)->x-3]='b';
+                        }
+                    }
+                }
+                else {
+                    for(int i=0;i<7;i++){
+                        for(int j=0;j<7;j++){
+                            buff_board[i+(*iter)->y-3][j+(*iter)->x-3]='a';
+                        }
+                    }
+                    //buff_range 삭제.
+                }
                 if(board[(*iter)->y][(*iter)->x]=='\''){//enemy가 현재 위치에 level_1_bullet 있으면 life 1까기.
                     (*iter)->hp_enemy-=1;
                 }
@@ -259,21 +286,21 @@ void Screen_manager::print_share(){
                                 int swift=0;
                                 if((*iter)->x>1&&(*iter)->x<(width/2)) {
                                     swift=-1;
-                                    Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, buffed, check_frame, swift);
+                                    Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, (*iter)->buffed, check_frame, swift);
                                     //enemy_bullet 생성 직후 충돌 여부 따지기.
                                     (*iter)->bullet.push_back(bullet_obj);
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
                                 else if((*iter)->x>=(width/2)&&(*iter)->x<(width-2)) {
                                     swift=1;
-                                    Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, buffed, check_frame, swift);
+                                    Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, (*iter)->buffed, check_frame, swift);
                                     //enemy_bullet 생성 직후 충돌 여부 따지기.
                                     (*iter)->bullet.push_back(bullet_obj);
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
                             }
                             else{                              
-                                Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x, buffed, check_frame);
+                                Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x, (*iter)->buffed, check_frame);
                                 (*iter)->bullet.push_back(bullet_obj);
                                 board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                             }

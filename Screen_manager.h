@@ -41,6 +41,7 @@ class Screen_manager{
         void enemy_push(int num_event);
         void item_push(int num_event);
         char board[30][60]={'a'};
+        char buff_board[30][60]={'a'};
         My_plane my_plane = My_plane(height-2, 1, 0);
         vector<Enemy*> enemy;//existing enemy list.
         vector<char>enemy_type={'n','r','s','d','a'};
