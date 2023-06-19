@@ -25,6 +25,8 @@ class My_plane{
         int create_frame_my_plane; //initialize when it creates//처음 값 0.
         int check_frame_my_plane=0;
         int hp_my_plane=5;
+        int level=1;
+        int power=1;
         int my_score=0;
         int n_kill=0;
         int r_kill=0;

@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     }
     input.close();
     manager.enemy_push(num_event);
+    manager.item_push(num_event);
     
     double operation_time=0; //microseconds
     double frame_length = manager.frame_length;

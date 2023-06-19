@@ -17,6 +17,8 @@
 #include "Enemy_3s.h"
 #include "Enemy_4d.h"
 #include "Enemy_5a.h"
+#include "Item_L.h"
+#include "Item_P.h"
 
 using namespace std;
 
@@ -37,9 +39,11 @@ class Screen_manager{
         void print_share();
         void render();
         void enemy_push(int num_event);
+        void item_push(int num_event);
         char board[30][60]={'a'};
-        char before_board[30][60]={'a'};
         My_plane my_plane = My_plane(height-2, 1, 0);
         vector<Enemy*> enemy;//existing enemy list.
+        vector<char>enemy_type={'n','r','s','d','a'};
+        vector<Item*> item;//existing item list.
 };
 #endif

@@ -44,8 +44,36 @@ void Screen_manager::print_share(){
     shot_frame = this->my_plane.shot_frame_my_plane;
     create_frame = this->my_plane.create_frame_my_plane;//기준값 변하지 않음 const.
     check_frame = this->my_plane.check_frame_my_plane;//frame 값 1씩 증가.
-    while ((curr_frame-create_frame)/shot_frame - check_frame > 0){ //bullet create
-        Bullet *bullet_obj = new Bullet(this->my_plane.y-1+shot_frame, this->my_plane.x, check_frame);
+    while ((curr_frame-create_frame)/shot_frame - check_frame > 0){
+        //item 부터 생성하고 처리하여 bullet 효과 이후에 바로 적용.
+        for(auto iter=this->item.begin();iter<this->item.end(); ){//item vector 돌며 생성. *iter는 &item_obj 지칭.
+            int item_create_frame = (*iter)->create_frame_item;
+            int item_check_frame = (*iter)->check_frame_item;
+
+            if(curr_frame==item_create_frame){//처음 생성.
+                board[(*iter)->y][(*iter)->x]=(*iter)->type;
+                iter++;
+            }// iter++ 가 잘못 배정되거나 빠지면 오류. 아래 줄부터 에러 !!.
+            else if(curr_frame-item_create_frame >= 0){//생성 이후.
+                if(board[(*iter)->y][(*iter)->x]=='M'){//item의 현재 위치에 my_plane 있으면 삭제하고 효과 적용.
+                    if((*iter)->type=='L'){
+                        if(this->my_plane.level<3) this->my_plane.level++;
+                    }
+                    if((*iter)->type=='P'){
+                        if(this->my_plane.power<2) this->my_plane.power++;
+                    }
+                    item.erase(iter);
+                    continue;
+                }
+                board[(*iter)->y][(*iter)->x]=(*iter)->type;//enemy 이동. !~enemy_bullet
+                iter++;
+            }
+            else {
+                iter++;
+            }
+        }
+
+        Bullet *bullet_obj = new Bullet(this->my_plane.y-1+shot_frame, this->my_plane.x, check_frame);//bullet create
         this->my_plane.bullet.push_back(bullet_obj);//contact by reference
         for(auto iter=this->my_plane.bullet.begin(); iter<this->my_plane.bullet.end(); ){//iter == bullet reference의 reference. *iter == bullet_obj
             if((*iter)->y<=0){//position
@@ -62,6 +90,7 @@ void Screen_manager::print_share(){
                 iter++;
             }
         }
+
         for(auto iter=this->enemy.begin();iter<this->enemy.end(); ){//enemy vector 돌며 생성. *iter는 &enemy_obj 지칭.
             int enemy_create_frame = (*iter)->create_frame_enemy;
             int enemy_speed = (*iter)->cell_speed;
@@ -228,32 +257,23 @@ void Screen_manager::print_share(){
                             }
                             if((*iter)->type=='d'){//diagonal.
                                 int swift=0;
-                                if((*iter)->x>0&&(*iter)->x<(width/2)) {
+                                if((*iter)->x>1&&(*iter)->x<(width/2)) {
                                     swift=-1;
                                     Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, buffed, check_frame, swift);
                                     //enemy_bullet 생성 직후 충돌 여부 따지기.
-                                    if(board[bullet_obj->y][bullet_obj->x]=='M'){//enemy_bullet conflict with my_plane
-                                        this->my_plane.hp_my_plane-=bullet_obj->damage;
-                                    }
                                     (*iter)->bullet.push_back(bullet_obj);
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
-                                else if((*iter)->x>=(width/2)&&(*iter)->x<(width-1)) {
+                                else if((*iter)->x>=(width/2)&&(*iter)->x<(width-2)) {
                                     swift=1;
                                     Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x+swift, buffed, check_frame, swift);
                                     //enemy_bullet 생성 직후 충돌 여부 따지기.
-                                    if(board[bullet_obj->y][bullet_obj->x]=='M'){//enemy_bullet conflict with my_plane
-                                        this->my_plane.hp_my_plane-=bullet_obj->damage;
-                                    }
                                     (*iter)->bullet.push_back(bullet_obj);
                                     board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                                 }
                             }
                             else{                              
                                 Enemy_bullet *bullet_obj = new Enemy_bullet((*iter)->y+1, (*iter)->x, buffed, check_frame);
-                                if(board[bullet_obj->y][bullet_obj->x]=='M'){//enemy_bullet conflict with my_plane
-                                    this->my_plane.hp_my_plane-=bullet_obj->damage;
-                                }
                                 (*iter)->bullet.push_back(bullet_obj);
                                 board[bullet_obj->y][bullet_obj->x]=bullet_obj->type;//enemy_bullet 생성. 중요. 여기서 생성되는 enemy_bullet의 class variable을 reinitialize 할 수 있음.
                             }
@@ -327,6 +347,7 @@ void Screen_manager::print_share(){
             else {
                 iter++;
             }
+            board[my_plane.y][my_plane.x]='M';
         }
     this->my_plane.check_frame_my_plane+=1;
     check_frame++;
@@ -400,20 +421,27 @@ void Screen_manager::enemy_push(int num_event){
                 enemy_obj_d = new Enemy_4d(y_event[i],x_event[i],frame_event[i]);
                 enemy.push_back(enemy_obj_d);
                 break;
-                /*
             case 'a':
                 enemy_obj_a = new Enemy_5a(y_event[i],x_event[i],frame_event[i]);
                 enemy.push_back(enemy_obj_a);
                 break;
+        }
+    }
+}
+
+void Screen_manager::item_push(int num_event){
+    for(int i=0;i<num_event;i++){
+        Item_L *item_obj_L = nullptr;
+        Item_P *item_obj_P = nullptr;
+        switch(type_event[i]){
             case 'L':
-                enemy_obj_L = new Enemy_1n(y_event[i],x_event[i],frame_event[i]);
-                enemy.push_back(enemy_obj_L);
+                item_obj_L = new Item_L(y_event[i],x_event[i],frame_event[i]);
+                item.push_back(item_obj_L);
                 break;
             case 'P':
-                enemy_obj_P = new Enemy_1n(y_event[i],x_event[i],frame_event[i]);
-                enemy.push_back(enemy_obj_P);
+                item_obj_P = new Item_P(y_event[i],x_event[i],frame_event[i]);
+                item.push_back(item_obj_P);
                 break;
-            */
         }
     }
 }
